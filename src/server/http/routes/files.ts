@@ -1,6 +1,7 @@
 // Files a floor's windows show or take: pictures on the walls and the whiteboard, files dropped into
 // a terminal, changed pictures in the Changes window, and the bookshelf's Markdown.
 import type { Floor } from '../../floor.js';
+import { canAccessWorker, PRIVATE_SESSION } from '../../workers/privacy.js';
 import { WB_MAX_FILE_BYTES } from '../../../shared/whiteboard.js';
 import { DROP_MAX_BYTES } from '../../../shared/drops.js';
 import type { Ctx } from '../../office/context.js';
@@ -35,7 +36,7 @@ export const fileRoutes = {
   whiteboardFile: {
     path: '/api/whiteboard/file',
     auth: 'session',
-    async handle(ctx, { req, res, url }) {
+    async handle(ctx, { req, res, url, session }) {
       const floor = floorParam(ctx, url);
       // Pictures on the whiteboard. Their ids are hashes of what's in them, so they never change.
       if (!floor) return send(res, 404, { error: 'No such floor' });
@@ -60,7 +61,7 @@ export const fileRoutes = {
   termDrop: {
     path: '/api/term/drop',
     auth: 'session',
-    async handle(ctx, { req, res, url }) {
+    async handle(ctx, { req, res, url, session }) {
       const floor = floorParam(ctx, url);
       // A file dropped or pasted into a worker's terminal, kept on this machine for the terminal to type its path.
       if (req.method !== 'POST') return send(res, 405, { error: 'Method not allowed' });
@@ -68,6 +69,7 @@ export const fileRoutes = {
       if (!floor) return send(res, 404, { error: 'No such floor' });
       const workerId = str(url.searchParams.get('worker'), 32);
       if (!floor.workers.get(workerId)) return send(res, 404, { error: 'No such worker' });
+      if (!canAccessWorker(floor, workerId, session.account?.id)) return send(res, 403, { error: PRIVATE_SESSION });
       const tooBig = `That file is too big to drop into a terminal (${DROP_MAX_BYTES / 1024 / 1024} MB at most)`;
       if (Number(req.headers['content-length']) > DROP_MAX_BYTES) return send(res, 413, { error: tooBig });
       let body: Buffer;
@@ -83,7 +85,7 @@ export const fileRoutes = {
   changedFile: {
     path: '/api/changes/file',
     auth: 'session',
-    async handle(ctx, { req, res, url }) {
+    async handle(ctx, { req, res, url, session }) {
       const floor = floorParam(ctx, url);
       // A changed picture in the Changes window at a desk: before (old) or after (new) the worker's edits.
       if (req.method !== 'GET') return send(res, 405, { error: 'Method not allowed' });
@@ -93,6 +95,7 @@ export const fileRoutes = {
       if (!workerId || !file || (side !== 'old' && side !== 'new')) return send(res, 400, { error: 'Bad request' });
       if (!floor) return send(res, 404, { error: 'No such floor' });
       if (!floor.workers.get(workerId)) return send(res, 404, { error: 'No such worker' });
+      if (!canAccessWorker(floor, workerId, session.account?.id)) return send(res, 403, { error: PRIVATE_SESSION });
       const r = await floor.changes.file(workerId, file, side, repoOf(url.searchParams.get('repo')));
       if ('error' in r) return send(res, r.status, { error: r.error });
       res.writeHead(200, {

@@ -3,6 +3,7 @@ import type { Floor } from '../../floor.js';
 import type { Ctx } from '../../office/context.js';
 import type { Client } from '../../office/client.js';
 import { str } from '../../office/input.js';
+import { canAccessWorker, PRIVATE_SESSION } from '../../workers/privacy.js';
 
 /** The floor `c` is on, or a note to them that they have to be on one. */
 export const here = (ctx: Ctx, c: Client): Floor | undefined => {
@@ -12,8 +13,12 @@ export const here = (ctx: Ctx, c: Client): Floor | undefined => {
 };
 
 /** A worker by id, with the floor it sits on. */
-export const workerOf = (ctx: Ctx, id: unknown) => {
+export const workerOf = (ctx: Ctx, id: unknown, c: Client) => {
   const wid = str(id, 32);
   const floor = ctx.workerFloor(wid);
+  if (floor && !canAccessWorker(floor, wid, c.accountId)) {
+    ctx.warn(c, PRIVATE_SESSION);
+    return undefined;
+  }
   return floor ? { wid, floor, info: floor.workers.get(wid)! } : undefined;
 };

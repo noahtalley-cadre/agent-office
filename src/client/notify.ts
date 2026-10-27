@@ -25,7 +25,7 @@ export async function askNotifyPermission(): Promise<NotifyPermission> {
 
 /** Waiting on a person: needs input, or finished its turn and nobody has looked yet. */
 export function waitingOnSomeone(w: WorkerInfo): w is WorkerInfo & { status: 'needs_input' | 'done' } {
-  return w.status === 'needs_input' || (w.status === 'done' && !w.acked);
+  return !w.private && (w.status === 'needs_input' || (w.status === 'done' && !w.acked));
 }
 
 export class DesktopNotifier {
@@ -43,7 +43,7 @@ export class DesktopNotifier {
 
   /** A worker just started waiting on input, or finished its turn. */
   alert(w: WorkerInfo & { status: 'needs_input' | 'done' }) {
-    if (!this.enabled() || notifyPermission() !== 'granted') return;
+    if (w.private || !this.enabled() || notifyPermission() !== 'granted') return;
     if (!document.hidden && document.hasFocus()) return;
     const title = w.status === 'done' ? `✅ ${w.name} is done` : `🙋 ${w.name} needs you`;
     const body = [w.task?.name, alertDetail(w)].filter(Boolean).join('\n');

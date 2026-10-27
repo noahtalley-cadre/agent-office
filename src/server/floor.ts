@@ -16,6 +16,7 @@ import { Decor } from './decor.js';
 import { FloorPlanStore } from './floorplan.js';
 import { Docs } from './docs.js';
 import { Dog } from './dog.js';
+import { Kitchen } from './kitchen.js';
 import { Court } from './court.js';
 import { Jail } from './jail.js';
 import { Garage } from './garage.js';
@@ -131,6 +132,7 @@ export class Floor {
   readonly dog: Dog;
   /** The basketball by the hoop: who has it, or how it was last thrown. */
   readonly court = new Court();
+  readonly kitchen = new Kitchen();
   /** The cars in the garage: who's in which, and where their drivers have left them. */
   readonly garage = new Garage();
   /** Workers sent home on a map that locks them up (see MapPlan.sendHome). */
@@ -323,7 +325,7 @@ export class Floor {
   }
 
   /**
-   * With ⚙️ Settings' *go home once merged* on, sends home every worker whose pull request merged,
+   * With ⚙️ Settings' *go home once merged* on, sends home shared workers whose pull request merged,
    * once it's at rest and nobody has its terminal open, deleting its worktree and branch unless they
    * hold work that isn't on GitHub. Called whenever that might have changed; it looks a moment later,
    * once for a burst of calls, and not from inside the event that prompted it.
@@ -336,6 +338,8 @@ export class Floor {
       const pullsOf = (id: string) => this.ctx.floor(id)?.github.pulls.items;
       for (const landed of landedWorkers(this.workers.list(), this.github.pulls.items, this.queue.state().tasks, pullsOf)) {
         const { worker, head, heads } = landed;
+        // Global settings never consent on behalf of the account that owns a private session.
+        if (this.workers.ownerOf(worker.id)) continue;
         if (!worker.repos?.length) {
           this.goHome(worker, `PR #${landed.pr} merged`, head);
           continue;

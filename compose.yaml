@@ -1,0 +1,25 @@
+name: clubhouse
+services:
+  office:
+    build:
+      context: .
+      dockerfile: deploy/personal/Dockerfile
+    init: true
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4600:4600"
+    volumes:
+      - office-data:/data
+    environment:
+      OFFICE_MAX_WORKERS: "3"
+    mem_limit: 4g
+    cpus: 2
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4600/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+volumes:
+  office-data:
+    name: clubhouse-data

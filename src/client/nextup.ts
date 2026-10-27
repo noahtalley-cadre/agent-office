@@ -32,7 +32,7 @@ export function needingYou(workers: Iterable<WorkerInfo>): (WorkerInfo & { statu
  */
 export function needyFirst(workers: Iterable<WorkerInfo>): WorkerInfo[] {
   const all = [...workers];
-  return [...needingYou(all), ...all.filter((w) => w.status !== 'needs_input').sort((a, b) => a.createdAt - b.createdAt)];
+  return [...needingYou(all), ...all.filter((w) => w.private || w.status !== 'needs_input').sort((a, b) => a.createdAt - b.createdAt)];
 }
 
 /**

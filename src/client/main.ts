@@ -38,6 +38,8 @@ import { installCarrying } from './features/carrying';
 import { installCars } from './features/cars';
 import { installChat } from './features/chat';
 import { installClimbing } from './features/climbing';
+import { installParkour } from './features/parkour';
+import { installKitchen } from './features/kitchen';
 import { installCoffee } from './features/coffee';
 import { installDictation } from './features/dictation';
 import { installDog } from './features/dog';
@@ -152,6 +154,8 @@ installHerald(ctx, parts);
 
 parts.bar = installBar(ctx, { roof: parts.rooftop.roof, djAt: parts.rooftop.djAt, reach });
 parts.coffee = installCoffee(ctx);
+installKitchen(ctx);
+installParkour(ctx);
 parts.smoking = installSmoke(ctx);
 installLamplight(ctx, parts);
 parts.hoops = installBasketball(ctx, { remotes: parts.peers.remotes, reach });

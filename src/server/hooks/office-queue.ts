@@ -1,4 +1,5 @@
 import type http from 'node:http';
+import { PRIVATE_SESSION } from '../workers/privacy.js';
 import { DESK_BY_ID } from '../../shared/layout.js';
 import type { Ctx } from '../office/context.js';
 import { str } from '../office/input.js';
@@ -14,6 +15,8 @@ export async function officeQueue(ctx: Ctx, req: http.IncomingMessage, res: http
   const floor = ctx.workerFloor(workerId);
   const agent = floor?.workers.authenticate(workerId, token);
   if (!floor || !agent) return send(res, 401, { error: 'Send your own AGENT_OFFICE_WORKER_ID as ?worker= and AGENT_OFFICE_HOOK_TOKEN as the bearer token' });
+  const owner = floor.workers.ownerOf(agent.id);
+  if (owner && !ctx.accounts.get(owner)) return send(res, 403, { error: 'The account that started this worker was revoked' });
   if (!DESK_BY_ID.get(agent.deskId)?.station) return send(res, 403, { error: 'Only the agents standing by the boards can use the queue' });
   const view = () => {
     const q = floor.queue.state();
@@ -24,7 +27,10 @@ export async function officeQueue(ctx: Ctx, req: http.IncomingMessage, res: http
   };
   if (req.method === 'GET') return send(res, 200, view());
   if (req.method === 'DELETE') {
-    const err = floor.queue.remove(url.searchParams.get('task') ?? '');
+    const id = url.searchParams.get('task') ?? '';
+    const task = floor.queue.state().tasks.find((t) => t.id === id);
+    if (task && task.owner !== owner) return send(res, 403, { error: PRIVATE_SESSION });
+    const err = floor.queue.remove(id);
     return err ? send(res, 400, { error: err }) : send(res, 200, view());
   }
   if (req.method !== 'POST') return send(res, 405, { error: 'GET, POST or DELETE' });

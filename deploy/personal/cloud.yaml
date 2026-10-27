@@ -1,0 +1,19 @@
+services:
+  https:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      OFFICE_DOMAIN: ${OFFICE_DOMAIN:?Set OFFICE_DOMAIN to a hostname pointing at this server}
+    volumes:
+      - ./deploy/personal/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      office:
+        condition: service_healthy
+volumes:
+  caddy-data:
+  caddy-config:

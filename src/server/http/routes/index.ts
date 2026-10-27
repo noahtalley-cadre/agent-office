@@ -21,6 +21,7 @@ export const routes: readonly Route[] = [
   authRoutes.logout,
   pageRoutes.health,
   pageRoutes.assets,
+  pageRoutes.brand,
   pageRoutes.login,
   pageRoutes.claim,
   pageRoutes.join,

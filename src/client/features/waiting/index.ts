@@ -1,3 +1,4 @@
+import { privateSession } from '../../shared/worker-access';
 /**
  * Who's waiting on you: N (and the count in the Workers panel) takes you to each in turn, and the
  * compass points to the ones you can't see. Also going to a worker's desk, opening its terminal
@@ -112,7 +113,7 @@ export function installWaiting(ctx: Ctx, core: CoreState, parts: Pick<Parts, 'wo
   /** Opening a sleeping worker's terminal wakes it, so there's nothing to press first. */
   function openWorkerTerminal(id: string, find?: TerminalFind) {
     const w = store.workers.get(id);
-    if (!w) return;
+    if (!w || privateSession(w)) return;
     const { actions } = parts;
     if (w.lost) return actions.fixLostWorktree(w);
     if (isAsleep(w.status)) actions.resumeWorker(w);
@@ -135,7 +136,7 @@ export function installWaiting(ctx: Ctx, core: CoreState, parts: Pick<Parts, 'wo
   /** What the worker changed: changed files, diff, commit / discard / open a PR; `repo` for another floor's repository it works in. */
   function openWorkerChanges(id: string, repo?: string) {
     const w = store.workers.get(id);
-    if (!w) return;
+    if (!w || privateSession(w)) return;
     if (w.lost) return parts.actions.fixLostWorktree(w);
     openChanges(net, id, () => openWorkerTerminal(id), repo);
   }

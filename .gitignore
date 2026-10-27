@@ -5,3 +5,6 @@ dist
 .DS_Store
 pw.txt
 __pycache__/
+clubhouse-data.tar.gz
+backups/
+artifacts/

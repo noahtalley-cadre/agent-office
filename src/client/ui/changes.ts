@@ -1,3 +1,4 @@
+import { privateSession } from '../shared/worker-access';
 import './changes.css';
 import { changedImageType, type ChangedFile, type ChangesState, type ServerMsg } from '../../shared/protocol';
 import type { Net } from '../net';
@@ -112,7 +113,7 @@ function renderPreview(workerId: string, repo: string | undefined, f: ChangedFil
 export function openChanges(net: Net, workerId: string, onTerminal?: () => void, repo?: string) {
   if (current?.workerId === workerId) return current.show(repo);
   const info = store.workers.get(workerId);
-  if (!info) return;
+  if (!info || privateSession(info)) return;
   const previous = current;
 
   let state: ChangesState | null = null;

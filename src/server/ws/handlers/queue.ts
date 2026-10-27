@@ -3,9 +3,20 @@ import { isAgentEffort, isAgentProvider, type QueueClientMsg } from '../../../sh
 import { OPEN_CODE_MODEL_MAX } from '../../../shared/providers.js';
 import { num, str } from '../../office/input.js';
 import { here } from './common.js';
+import { PRIVATE_SESSION } from '../../workers/privacy.js';
+import type { Ctx } from '../../office/context.js';
+import type { Client } from '../../office/client.js';
+import type { Floor } from '../../floor.js';
 import type { HandlerMap, ViewPieces } from './types.js';
 
 export const queueView: ViewPieces['queue'] = (_ctx, floor) => floor?.queue.state() ?? { tasks: [], maxWorkers: 0 };
+
+function canManage(ctx: Ctx, c: Client, floor: Floor, id: string): boolean {
+  const task = floor.queue.state().tasks.find((t) => t.id === id);
+  if (!task || task.owner === c.accountId) return true;
+  ctx.warn(c, PRIVATE_SESSION);
+  return false;
+}
 
 export const queueHandlers = {
   'queue.add'(ctx, c, msg) {
@@ -28,17 +39,19 @@ export const queueHandlers = {
   },
   'queue.remove'(ctx, c, msg) {
     const floor = here(ctx, c);
-    if (floor) ctx.warn(c, floor.queue.remove(str(msg.taskId, 32)));
+    if (floor && canManage(ctx, c, floor, str(msg.taskId, 32))) ctx.warn(c, floor.queue.remove(str(msg.taskId, 32)));
   },
   'queue.move'(ctx, c, msg) {
-    ctx.floorOf(c)?.queue.move(str(msg.taskId, 32), num(msg.delta) < 0 ? -1 : 1);
+    const floor = ctx.floorOf(c);
+    if (floor && canManage(ctx, c, floor, str(msg.taskId, 32))) floor.queue.move(str(msg.taskId, 32), num(msg.delta) < 0 ? -1 : 1);
   },
   'queue.retry'(ctx, c, msg) {
     const floor = here(ctx, c);
-    if (floor) ctx.warn(c, floor.queue.retry(str(msg.taskId, 32)));
+    if (floor && canManage(ctx, c, floor, str(msg.taskId, 32))) ctx.warn(c, floor.queue.retry(str(msg.taskId, 32)));
   },
   'queue.clear'(ctx, c) {
-    ctx.floorOf(c)?.queue.clear();
+    const floor = ctx.floorOf(c);
+    for (const t of floor?.queue.state().tasks ?? []) if (t.status === 'done' && t.owner === c.accountId) floor!.queue.remove(t.id);
   },
   'queue.limit'(ctx, c, msg) {
     ctx.floorOf(c)?.queue.setLimit(num(msg.maxWorkers));

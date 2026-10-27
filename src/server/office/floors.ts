@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs';
+import { canAccessWorker } from '../workers/privacy.js';
 import { WebSocket } from 'ws';
 import type { FloorDef } from '../building.js';
 import { Floor, type FloorContext } from '../floor.js';
@@ -83,7 +84,7 @@ export async function openFloors(ctx: Ctx, hookPort: number): Promise<FloorsOpen
       const json = JSON.stringify({ t: 'term.data', workerId, data } satisfies ServerMsg);
       for (const id of viewers) {
         const c = clients.get(id);
-        if (!c || c.ws.readyState !== WebSocket.OPEN) continue;
+        if (!c || c.out || c.ws.readyState !== WebSocket.OPEN || !ctx.stillIn(c) || !canAccessWorker(ctx.workerFloor(workerId), workerId, c.accountId)) continue;
         // A viewer on a slow link skips output and gets a fresh snapshot once it catches up,
         // instead of queueing unbounded data in server memory.
         if (c.stale.has(workerId) || c.ws.bufferedAmount > SLOW_CLIENT_BYTES) c.stale.add(workerId);

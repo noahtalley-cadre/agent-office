@@ -1,0 +1,67 @@
+{
+  "brandPage": "https://sdx-cadre-brand-assets.vercel.app/cadre",
+  "guidelines": "https://sdx-cadre-brand-assets.vercel.app/assets/cadre/cadre-guidelines.md",
+  "retrieved": "2026-10-27",
+  "assets": {
+    "cadre-wordmark-black.svg": {
+      "url": "https://sdx-cadre-brand-assets.vercel.app/assets/cadre/cadre-wordmark-black.svg",
+      "sha256": "e983c40b5f91f8b2e3ea6eb896977636032defdd61182de4c9a44f2cca23380e"
+    },
+    "cadre-wordmark-sand.svg": {
+      "url": "https://sdx-cadre-brand-assets.vercel.app/assets/cadre/cadre-wordmark-sand.svg",
+      "sha256": "058fcd2d24e17b4c8d5f8479ae4782c8c8d2331d7acb2a997840ed305a56b202"
+    },
+    "cadre-cube-black.svg": {
+      "url": "https://sdx-cadre-brand-assets.vercel.app/assets/cadre/Cadre%20Logo%20Cube%20-Black.svg",
+      "sha256": "f1d50f8cd394e5373baab3fa416880f65d99ba71d87e2d3effb8b3c4eaacb5fb"
+    },
+    "cadre-cube-white.svg": {
+      "url": "https://sdx-cadre-brand-assets.vercel.app/assets/cadre/Cadre%20Logo%20Cube-White.svg",
+      "sha256": "89c533284b69e012271d64d1fc4bd5f63176c26061999222e6828b6f5d4caa2c"
+    },
+    "inter-latin.woff2": {
+      "url": "https://sdx-cadre-brand-assets.vercel.app/_next/static/media/83afe278b6a6bb3c-s.p.0q-301v4kxxnr.woff2",
+      "sha256": "c940764593d0fe5d596be327ca7558855e018039fb78509aa21921fd3644c3e4"
+    },
+    "inter-tight-latin.woff2": {
+      "url": "https://sdx-cadre-brand-assets.vercel.app/_next/static/media/487e0b4a726fb2c6-s.p.16c8~9gl20blr.woff2",
+      "sha256": "381e3f55dbb210af4f31f827d187b33a166a6e95843eed570f87675fc20a4bf5"
+    },
+    "poppins-semibold-latin.woff2": {
+      "url": "https://sdx-cadre-brand-assets.vercel.app/_next/static/media/e2334d715941921e-s.p.12skym0rqknxy.woff2",
+      "sha256": "872e862918591a9e824dc03ed92f05729435ffbb8ebbb10eff7eda26592b1798"
+    },
+    "inter-LICENSE.txt": {
+      "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/inter/OFL.txt",
+      "sha256": "5b9321a4298cfeb6b34354164a1c3afc3db114569984c502b9b35d988fd58c57"
+    },
+    "inter-tight-LICENSE.txt": {
+      "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/intertight/OFL.txt",
+      "sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58"
+    },
+    "poppins-LICENSE.txt": {
+      "url": "https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/OFL.txt",
+      "sha256": "6be04893d770899a015649c7aa3b582f871b272f8747a92b78b17c3e5c8b2573"
+    },
+    "cadre-wordmark-black.png": {
+      "derivedFrom": [
+        "cadre-wordmark-black.svg",
+        "poppins-semibold-latin.woff2"
+      ],
+      "method": "Original SVG rendered in Chromium after document.fonts.load(\"600 48px Poppins\"), transparent background, 4x original SVG viewBox.",
+      "width": 856,
+      "height": 256,
+      "sha256": "93ca28198cc163155e60383acbc59bc62fcd4962f0c918294c398f031c3db681"
+    },
+    "cadre-wordmark-sand.png": {
+      "derivedFrom": [
+        "cadre-wordmark-sand.svg",
+        "poppins-semibold-latin.woff2"
+      ],
+      "method": "Original SVG rendered in Chromium after document.fonts.load(\"600 48px Poppins\"), transparent background, 4x original SVG viewBox.",
+      "width": 856,
+      "height": 256,
+      "sha256": "68de51b8bd486460fe62d137b38617770634bfa5f6aa03657512e8409b56dd9c"
+    }
+  }
+}

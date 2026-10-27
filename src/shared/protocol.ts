@@ -5,6 +5,8 @@
 // unions every frame is one of.
 
 import type { AccountsClientMsg, AccountsServerMsg, SignInsClientMsg, TeamClientMsg } from './protocol/accounts.js';
+import type { ParkourClientMsg, ParkourServerMsg } from './protocol/parkour.js';
+import type { KitchenClientMsg, KitchenServerMsg } from './protocol/kitchen.js';
 import type { ChangesClientMsg, ChangesServerMsg } from './protocol/changes.js';
 import type { FloorClientMsg, FloorServerMsg, PlanClientMsg } from './protocol/floors.js';
 import type { GitHubClientMsg, GitHubServerMsg } from './protocol/github.js';
@@ -20,6 +22,8 @@ import type { WorkerClientMsg, WorkerServerMsg } from './protocol/workers.js';
 export * from './protocol/accounts.js';
 export * from './protocol/agents.js';
 export * from './protocol/changes.js';
+export * from './protocol/kitchen.js';
+export * from './protocol/parkour.js';
 export * from './protocol/floors.js';
 export * from './protocol/github.js';
 export * from './protocol/meetings.js';
@@ -32,6 +36,8 @@ export * from './protocol/usage.js';
 export * from './protocol/workers.js';
 
 export type ClientMsg =
+  | ParkourClientMsg
+  | KitchenClientMsg
   | PresenceClientMsg
   | RooftopClientMsg
   | WorkerClientMsg
@@ -55,6 +61,8 @@ export type ClientMsg =
   | DogClientMsg;
 
 export type ServerMsg =
+  | ParkourServerMsg
+  | KitchenServerMsg
   | PresenceServerMsg
   | RooftopServerMsg
   | WorkerServerMsg

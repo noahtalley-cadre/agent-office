@@ -1,3 +1,4 @@
+import { privateSession } from '../shared/worker-access';
 import './terminal.css';
 import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
@@ -105,7 +106,7 @@ export function openTerminal(net: Net, workerId: string, onChanges?: () => void,
   }
   current?.modal.close();
   const info = store.workers.get(workerId);
-  if (!info) return;
+  if (!info || privateSession(info)) return;
 
   const dot = h('span.dot', { style: `background:${info.color}` });
   const title = h('h2', {}, info.kind === 'agent' ? `${engineLabel(info, store.project)} · ${info.name}` : info.name);

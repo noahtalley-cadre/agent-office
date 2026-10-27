@@ -1,30 +1,91 @@
-:root { --bg: #ffe8cc; --ink: #2b2d42; --card: #fffaf3; --accent: #ff8a5b; --muted: #7a6f65; --border: #2b2d42; }
+@font-face { font-family: Inter; src: url('/brand/inter-latin.woff2') format('woff2'); font-style: normal; font-weight: 100 900; font-display: swap; }
+@font-face { font-family: 'Inter Tight'; src: url('/brand/inter-tight-latin.woff2') format('woff2'); font-style: normal; font-weight: 700; font-display: swap; }
+:root { --bg: #faf9f6; --ink: #000; --card: #fff; --accent: #db4545; --muted: #706c60; --border: #e5e2d8; }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-html, body { margin: 0; height: 100%; }
-body {
-  background: radial-gradient(circle at 20% 20%, #ffd6a5 0, transparent 40%), radial-gradient(circle at 80% 70%, #caffbf 0, transparent 45%), var(--bg);
-  font-family: 'Nunito', ui-rounded, 'SF Pro Rounded', system-ui, sans-serif;
-  color: var(--ink); display: grid; place-items: center; padding: 16px;
-}
-.card { width: min(380px, 100%); background: var(--card); border: 3px solid var(--border); border-radius: 22px; padding: 28px; box-shadow: 0 8px 0 var(--border); text-align: center; }
+html, body { margin: 0; min-height: 100%; }
+body { background: var(--bg); font-family: Inter, Arial, sans-serif; color: #2b2b2b; display: grid; place-items: center; padding: 24px; }
+.card { width: min(400px, 100%); background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 32px; box-shadow: 0 28px 32px #00000008; text-align: center; }
 .logo { display: grid; place-items: center; }
-h1 { margin: 8px 0 4px; font-size: 28px; }
-.sub { margin: 0 0 20px; color: var(--muted); }
-label { display: block; text-align: left; font-weight: 700; font-size: 14px; }
-input { width: 100%; margin-top: 6px; padding: 12px 14px; font-size: 16px; border: 3px solid var(--border); border-radius: 12px; background: #fff; color: var(--ink); outline: none; }
-input:focus { border-color: var(--accent); }
-button { margin-top: 16px; width: 100%; padding: 12px; font-size: 16px; font-weight: 800; border: 3px solid var(--border); border-radius: 12px; background: var(--accent); color: #fff; cursor: pointer; box-shadow: 0 4px 0 var(--border); }
-button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--border); }
-button:disabled { opacity: .6; cursor: default; }
-.error { min-height: 1.2em; color: #c3423f; font-weight: 700; margin: 12px 0 0; }
-.warn { text-align: left; background: #fff3c4; border: 3px solid var(--border); border-radius: 12px; padding: 10px 12px; margin: 0 0 14px; font-size: 14px; }
-.secret { display: flex; gap: 8px; align-items: center; justify-content: center; background: #fff; border: 3px dashed var(--border); border-radius: 12px; padding: 14px; }
-.secret code { font: 800 26px ui-monospace, Menlo, Consolas, monospace; letter-spacing: .04em; word-break: break-all; }
-button.mini { width: auto; margin: 0; padding: 6px 10px; font-size: 13px; box-shadow: 0 2px 0 var(--border); }
-.check { display: flex; gap: 8px; align-items: center; justify-content: center; margin-top: 14px; font-weight: 800; }
-.check input { width: auto; margin: 0; }
-a { color: var(--ink); font-weight: 800; }
-label + label { margin-top: 12px; }
-.note { text-align: left; color: var(--muted); font-size: 13px; margin: 8px 0 0; }
-.role { display: inline-block; background: #fff3c4; border: 2px solid var(--border); border-radius: 999px; padding: 0 8px; font-size: 13px; font-weight: 800; }
+h1, h2 { font-family: 'Inter Tight', Inter, Arial, sans-serif; font-weight: 700; color: var(--ink); }
+h1 { margin: 16px 0 8px; font-size: 32px; letter-spacing: -.04em; }
+.sub { margin: 0 0 28px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+label { display: block; text-align: left; font-weight: 500; font-size: 14px; }
+input { width: 100%; height: 54px; margin-top: 8px; padding: 15px 16px; font: 400 16px Inter, Arial, sans-serif; border: 1px solid #00000021; border-radius: 8px; background: #fff; color: var(--ink); outline: none; transition: border-color 180ms, box-shadow 180ms; }
+input::placeholder { color: #737373; }
+input:focus-visible { border-color: #08749b; box-shadow: 0 0 0 3px #08749b24; }
+button { margin-top: 24px; width: 100%; min-height: 54px; padding: 14px 20px; font: 500 15px Inter, Arial, sans-serif; border: 1px solid #000; border-radius: 36px; background: #000; color: #fff; cursor: pointer; transition: background 180ms, transform 180ms, box-shadow 180ms; }
+button:hover { background: #242424; transform: translateY(-2px); box-shadow: 0 8px 16px #00000012; }
+button:active { transform: translateY(0); }
+button:focus-visible, a:focus-visible { outline: 3px solid #08749b; outline-offset: 4px; }
+button:disabled { opacity: .6; cursor: default; transform: none; box-shadow: none; }
+.error { min-height: 1.2em; color: #2b2b2b; font-weight: 500; font-size: 13px; margin: 12px 0 0; }
+.error:not(:empty) { background: #f4f0e6; border-left: 3px solid #db4545; padding: 8px 10px; }
+.warn { text-align: left; background: #f4f0e6; border: 1px solid var(--border); border-radius: 12px; padding: 12px; margin: 0 0 16px; font-size: 14px; line-height: 1.6; }
+.secret { display: flex; gap: 8px; align-items: center; justify-content: center; background: #fff; border: 1px dashed var(--muted); border-radius: 12px; padding: 14px; }
+.secret code { font: 600 26px ui-monospace, Menlo, Consolas, monospace; letter-spacing: .04em; word-break: break-all; }
+button.mini { width: auto; min-height: 36px; margin: 0; padding: 6px 12px; font-size: 13px; }
+.check { display: flex; gap: 8px; align-items: center; justify-content: center; margin-top: 16px; font-weight: 500; }
+.check input { width: auto; height: auto; margin: 0; }
+a { color: #08749b; font-weight: 500; }
+label + label { margin-top: 20px; }
+.note { text-align: left; color: var(--muted); font-size: 12px; line-height: 1.6; margin: 12px 0 0; }
+.role { display: inline-block; background: #f4f0e6; border: 1px solid var(--border); border-radius: 999px; padding: 2px 10px; font-size: 13px; font-weight: 500; }
+
+/* Cadre's warm neutrals, original logo assets, and black primary CTA. */
+.cadre-login { padding: 0; display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(420px, 1fr); min-height: 100svh; place-items: stretch; }
+.welcome { display: flex; flex-direction: column; background: #242424; color: #f4f0e6; padding: 40px clamp(32px, 5.5vw, 88px) 32px; overflow: hidden; }
+.welcome-header { display: flex; justify-content: space-between; gap: 24px; align-items: center; }
+.wordmark { width: 154px; height: auto; display: block; }
+.office-label { font-size: 10px; font-weight: 500; letter-spacing: .13em; color: #f4f0e6b3; white-space: nowrap; }
+.welcome-main { padding-top: clamp(68px, 10.5vh, 116px); }
+.eyebrow { font-size: 10px; font-weight: 600; line-height: 1.5; letter-spacing: .15em; }
+.welcome .eyebrow { color: #f4f0e6b3; display: flex; align-items: center; gap: 10px; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; background: #db4545; }
+.welcome h2 { font-size: clamp(58px, 6.1vw, 88px); letter-spacing: -.045em; line-height: 1.04; color: #f4f0e6; margin: 24px 0; }
+.welcome h2 span { color: #db4545; }
+.welcome-copy { color: #f4f0e6bf; font-size: 16px; line-height: 1.75; letter-spacing: -.01em; max-width: 350px; margin: 0; }
+.office-details { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 40px 0; margin-top: auto; }
+.details-copy { display: flex; flex-direction: column; gap: 16px; }
+.detail { display: flex; align-items: center; gap: 16px; font-size: 12px; line-height: 1.5; color: #f4f0e6bf; }
+.detail-number { font-size: 10px; color: #f4f0e680; }
+.cube { width: clamp(96px, 12vw, 160px); height: auto; opacity: .9; flex-shrink: 0; }
+.welcome-bottom { display: flex; justify-content: space-between; gap: 20px; border-top: 1px solid #f4f0e629; padding-top: 24px; font-size: 9px; line-height: 1.6; letter-spacing: .1em; color: #f4f0e699; }
+.entrance { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 72px 36px 36px; background: #faf9f6; position: relative; }
+.cadre-login .card { padding: 44px 40px 32px; max-width: 420px; width: 100%; text-align: left; }
+.entry-mark { display: block; width: 42px; height: 32px; margin-bottom: 32px; }
+.cadre-login .card .eyebrow { color: #706c60; margin: 0 0 10px; }
+.cadre-login h1 { font-size: 38px; line-height: 1.15; margin: 0 0 12px; }
+.cadre-login .sub { margin-bottom: 32px; max-width: 300px; }
+.cadre-login button { display: flex; align-items: center; justify-content: space-between; }
+.cadre-login button span { font-size: 22px; line-height: 1; }
+.privacy-note { display: flex; gap: 10px; align-items: flex-start; border-top: 1px solid #e5e2d8; padding-top: 20px; margin: 12px 0 0; color: #706c60; font-size: 11px; line-height: 1.6; }
+.privacy-note svg { flex-shrink: 0; margin-top: 1px; }
+.entrance-footer { margin: 32px 0 0; color: #706c60; font-size: 11px; text-align: center; }
+@media (min-width: 1500px) { .cadre-login { max-width: 1800px; margin: auto; } }
+@media (max-width: 1000px) {
+  .welcome { padding-left: 32px; padding-right: 32px; }
+  .office-label { font-size: 9px; }
+  .welcome h2 { font-size: 60px; }
+  .welcome-bottom { flex-direction: column; gap: 8px; }
+  .cube { width: 100px; }
+  .entrance { padding-left: 24px; padding-right: 24px; }
+  .cadre-login .card { padding: 36px 28px 28px; }
+}
+@media (max-width: 760px) {
+  .cadre-login { grid-template-columns: 1fr; }
+  .welcome { padding: 20px 24px 32px; }
+  .wordmark { width: 131px; }
+  .welcome-main { padding-top: 24px; }
+  .welcome .eyebrow { font-size: 9px; }
+  .welcome h2 { font-size: 48px; margin: 16px 0; }
+  .welcome-copy { max-width: 360px; font-size: 14px; line-height: 1.6; }
+  .office-details, .welcome-bottom { display: none; }
+  .entrance { padding: 28px 20px; }
+  .cadre-login .card { max-width: 460px; padding: 28px; }
+  .entry-mark { display: none; }
+  .cadre-login h1 { font-size: 32px; }
+  .cadre-login .sub { margin-bottom: 24px; }
+  .entrance-footer { margin-top: 24px; }
+}
+@media (prefers-reduced-motion: reduce) { input, button { transition: none; } button:hover { transform: none; } }

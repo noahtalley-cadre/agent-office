@@ -1,3 +1,4 @@
+import { privateSession } from '../../shared/worker-access';
 /**
  * What you do with workers: hire one at a desk (with a task, or a shell), prompt it, wake it, send it
  * home, fix a worktree deleted outside the office, open its pull requests; ask a board agent; stand
@@ -94,6 +95,7 @@ export function installWorkerActions(ctx: Ctx, core: CoreState, parts: WorkerAct
   function promptAtDesk(deskId: string) {
     const w = store.workerAtDesk(deskId);
     const desk = plan().byId.get(deskId)!;
+    if (privateSession(w)) return;
     if (!w) {
       if (officeIsFull()) return;
       openPrompt({
@@ -147,7 +149,7 @@ export function installWorkerActions(ctx: Ctx, core: CoreState, parts: WorkerAct
   ctx.messages.on('worker.worktree', routeWorktreeMessage);
   function killWorker(id: string) {
     const w = store.workers.get(id);
-    if (!w) return;
+    if (!w || privateSession(w)) return;
     const where = plan().byId.get(w.deskId)?.label ?? 'the desk';
     const session = w.kind === 'shell' ? 'shared shell' : `${providerLabel(w.provider, store.project)} session`;
     if (w.meeting) {
@@ -181,6 +183,7 @@ export function installWorkerActions(ctx: Ctx, core: CoreState, parts: WorkerAct
     const kind = plan().byId.get(deskId)?.station;
     if (!kind) return;
     const w = store.workerAtDesk(deskId);
+    if (privateSession(w)) return;
     const name = STATION_AGENT[kind].name;
     const info = STATION_INFO[kind];
     // A prompt typed into a question it's asking would answer it.
@@ -208,6 +211,7 @@ export function installWorkerActions(ctx: Ctx, core: CoreState, parts: WorkerAct
   }
 
   function resumeWorker(w: WorkerInfo) {
+    if (privateSession(w)) return;
     if (w.lost) return fixLostWorktree(w);
     if (!w.sessionId && w.kind !== 'shell') toast(`${w.name} has no saved Claude session — starting a fresh one`, 'warn');
     net.send({ t: 'worker.resume', workerId: w.id });
@@ -243,6 +247,7 @@ export function installWorkerActions(ctx: Ctx, core: CoreState, parts: WorkerAct
 
   /** O at a desk: see the worker's pull request, or push its branch and open one. */
   function pullRequestFor(w: WorkerInfo) {
+    if (privateSession(w)) return;
     if (w.repos?.length) return pullRequestsFor(w);
     if (w.pr) {
       const it = store.pulls.items.find((p) => p.number === w.pr!.number);
@@ -345,6 +350,7 @@ export function installWorkerActions(ctx: Ctx, core: CoreState, parts: WorkerAct
 
   function deskHint(deskId: string): Hint {
     const w = store.workerAtDesk(deskId);
+    if (w?.private) return { k: `private|${w.id}`, parts: [h('span.title', {}, `🔒 ${w.createdBy}'s private session`)] };
     if (!w && plan().byId.get(deskId)?.room) return { k: 'room', parts: [h('span.title', {}, `🤝 ${plan().byId.get(deskId)!.label} · free`), key('E', 'Call a meeting')] };
     // The sign over it, if it has one, and L to hang one (or change it).
     const sign = store.floorPlan.labels[deskId]?.text;
@@ -427,6 +433,7 @@ export function installWorkerActions(ctx: Ctx, core: CoreState, parts: WorkerAct
         ],
       };
     }
+    if (w.private) return { k: `private|${w.id}`, parts: [h('span.title', {}, `🔒 ${w.createdBy}'s private session`)] };
     const doing = w.activity ? clip(w.activity, 48) : '';
     const provider = resolvedProvider(w.provider, store.project);
     const spent = w.usage ? usageLabel(w.usage, provider) : '';
@@ -450,6 +457,7 @@ export function installWorkerActions(ctx: Ctx, core: CoreState, parts: WorkerAct
       if (!it.deskId) return;
       if (key === 'L') return openDeskLabel(net, it.deskId);
       const w = store.workerAtDesk(it.deskId);
+      if (privateSession(w)) return;
       // Nobody is hired at the meeting table: a meeting seats its own workers there.
       if (!w && plan().byId.get(it.deskId)?.room) return key === 'E' ? parts.meeting.showMeeting() : undefined;
       if (key === 'B' && !w) return openShell(it.deskId);
@@ -467,6 +475,7 @@ export function installWorkerActions(ctx: Ctx, core: CoreState, parts: WorkerAct
     use: (it, key) => {
       if (!it.deskId) return;
       const w = store.workerAtDesk(it.deskId);
+      if (privateSession(w)) return;
       if (key === 'E' || key === 'P') return askStation(it.deskId);
       if (key === 'O' && w) return openWorkerTerminal(w.id);
       if (key === 'X' && w) return killWorker(w.id);
@@ -476,7 +485,7 @@ export function installWorkerActions(ctx: Ctx, core: CoreState, parts: WorkerAct
   /** A prompt from the boards goes to a new worker at a free desk, or to one already at a desk. With `issue`, that worker takes the issue. */
   function sendToWorker(title: string, text: { context?: string; initial?: string }, issue?: number) {
     const desk = freeDesk();
-    const awake = [...store.workers.values()].filter((w) => w.kind === 'agent' && !isAsleep(w.status));
+    const awake = [...store.workers.values()].filter((w) => !w.private && w.kind === 'agent' && !isAsleep(w.status));
     if (!desk && !awake.length) {
       toast('Every desk and bean bag is taken — send a worker home first', 'warn');
       return;

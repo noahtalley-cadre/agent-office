@@ -1,3 +1,4 @@
+import { privateSession } from './shared/worker-access';
 // The 2D view (/lite): the office without the 3D, for a phone or a computer the 3D office is too
 // much for. Every worker on the floor and how it's doing, the ones waiting on someone first; its
 // terminal, with the keys a phone's keyboard hasn't got and a box to send it a prompt; and the boards
@@ -138,6 +139,7 @@ function renderWorkers() {
 }
 
 function workerCard(w: WorkerInfo): HTMLElement {
+  if (w.private) return h('li.lite-worker', {}, h('div.lite-card', {}, h('span.dot', { style: `background:${w.color}` }), h('span.lite-info', {}, h('span.lite-name', {}, w.name), h('span.lite-sub', {}, `🔒 ${w.createdBy}'s private session`)), h('span.pill', {}, STATUS_LABEL[w.status])));
   const desk = DESK_BY_ID.get(w.deskId);
   const waiting = waitingOnSomeone(w);
   const asleep = isAsleep(w.status);
@@ -205,7 +207,7 @@ setInterval(renderWorkers, 30_000);
 /** Its terminal, with the keypad, waking it up first if it's asleep. */
 function openWorker(id: string) {
   const w = store.workers.get(id);
-  if (!w) return;
+  if (!w || privateSession(w)) return;
   if (w.lost) return fixLostWorktree(w);
   if (isAsleep(w.status)) {
     if (!w.sessionId && w.kind !== 'shell') toast(`${w.name} has no saved session — starting a fresh one`, 'warn');
@@ -245,7 +247,7 @@ function fixLostWorktree(w: WorkerInfo) {
 
 function promptWorker(id: string) {
   const w = store.workers.get(id);
-  if (!w) return;
+  if (!w || privateSession(w)) return;
   openPrompt({
     title: `✍️ Prompt ${w.name}`,
     subtitle: w.status === 'working' ? `${w.name} is busy, so this waits in its input box until it's done.` : undefined,
@@ -265,7 +267,7 @@ function sendToWorker(title: string, text: { context?: string; initial?: string 
   if (!store.project) return toast('Pick a floor first', 'warn');
   // The back office's desks too, as far as the floor's built out (see WING).
   const desk = nextFreeSeat((id) => !!store.workerAtDesk(id), store.floorPlan.wing)?.id;
-  const awake = [...store.workers.values()].filter((w) => w.kind === 'agent' && !isAsleep(w.status));
+  const awake = [...store.workers.values()].filter((w) => !w.private && w.kind === 'agent' && !isAsleep(w.status));
   if (!desk && !awake.length) return toast('Every desk and bean bag is taken — send a worker home first', 'warn');
   openAsk({
     title,
@@ -291,7 +293,7 @@ function boardActions(): BoardActions {
     // There's no desk to walk to from here: its terminal instead.
     goToDesk: (deskId) => {
       const w = store.workerAtDesk(deskId);
-      if (!w) return;
+      if (!w || privateSession(w)) return;
       closeAllModals();
       openWorker(w.id);
     },
@@ -306,7 +308,7 @@ function showMeeting(preset?: MeetingPreset) {
       openTerminal: openWorker,
       openPr: (id) => {
         const w = store.workers.get(id);
-        if (!w) return;
+        if (!w || privateSession(w)) return;
         const it = w.pr && store.pulls.items.find((p) => p.number === w.pr!.number);
         if (it) openPull(it, net, boardActions());
         else if (w.pr) window.open(w.pr.url, '_blank', 'noopener');

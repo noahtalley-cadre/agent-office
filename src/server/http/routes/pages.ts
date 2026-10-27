@@ -19,6 +19,16 @@ export const pageRoutes = {
       res.writeHead(404).end();
     },
   },
+  // Sign-in needs these before a session exists; keep this route inside the brand directory.
+  brand: {
+    prefix: '/brand/',
+    auth: 'public',
+    handle(ctx, { res, path: p }) {
+      const file = publicFile(path.join(ctx.publicDir, 'brand'), p.slice('/brand'.length));
+      if (file) return serveFile(res, file, false);
+      res.writeHead(404).end();
+    },
+  },
   login: { path: ['/login', '/login.html'], auth: 'public', handle: page('login.html') },
   claim: { path: ['/claim', '/claim.html'], auth: 'public', handle: page('claim.html') },
   join: { path: ['/join', '/join.html'], auth: 'public', handle: page('join.html') },

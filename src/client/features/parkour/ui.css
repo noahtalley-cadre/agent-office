@@ -1,0 +1,51 @@
+.parkour-hud {
+  position: fixed;
+  left: 50%;
+  top: 82px;
+  transform: translateX(-50%);
+  z-index: 12;
+  min-width: 290px;
+  padding: 16px 22px;
+  text-align: center;
+  color: #fff7e4;
+  background: #173f35ed;
+  border: 1px solid #a6d6b85c;
+  border-radius: 18px;
+  box-shadow: 0 9px 28px #102a2429;
+  pointer-events: none;
+}
+.parkour-hud[hidden] { display: none; }
+.parkour-eyebrow { font-size: 10px; font-weight: 850; letter-spacing: 1.8px; }
+.parkour-clock { display: block; font-size: 34px; font-variant-numeric: tabular-nums; line-height: 1.3; }
+.parkour-detail { font-size: 12px; }
+.parkour-rivals { max-width: 360px; margin-top: 7px; font-size: 10px; opacity: .68; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.panel.parkour-menu { width: min(520px, calc(100vw - 28px)); padding: 24px; color: #23483d; background: #faf8ee; border: 1px solid #c7d4c4; border-radius: 22px; }
+.parkour-menu > header { padding: 0 0 18px; border: 0; display: flex; align-items: center; justify-content: space-between; }
+.parkour-menu .close { border: 0; color: #23483d; background: #e9eddf; }
+.parkour-intro { position: relative; padding-right: 42px; }
+.parkour-intro h2 { font-size: 34px; letter-spacing: -1px; margin: 0 0 8px; }
+.parkour-intro p { font-size: 14px; line-height: 1.6; margin: 0; color: #5c6d5d; }
+.parkour-badge { position: absolute; right: 0; top: 0; color: #fff5d6; background: #3d8068; border-radius: 15px; padding: 5px 12px; font-size: 30px; transform: rotate(7deg); }
+.parkour-controls { display: flex; flex-wrap: wrap; gap: 14px; padding: 18px 0 10px; font-size: 12px; }
+.parkour-controls kbd { border: 1px solid #c3d1be; border-bottom-width: 3px; border-radius: 6px; padding: 4px 6px; color: #23483d; background: white; font: 800 11px inherit; }
+.parkour-rule { margin: 8px 0 20px; color: #65725f; font-size: 12px; line-height: 1.6; }
+.parkour-last { background: #e7efdf; border-radius: 10px; padding: 12px; font-size: 12px; margin-bottom: 18px; }
+.parkour-last strong { font-size: 20px; margin-left: 8px; }
+.parkour-score-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.parkour-score-heading h3 { margin: 0 0 10px; font-size: 15px; }
+.parkour-score-heading > span { color: #75836e; font-size: 10px; }
+.parkour-scores { max-height: 240px; overflow: auto; }
+.parkour-score { display: flex; gap: 12px; align-items: center; padding: 11px 0; border-top: 1px solid #dfe5d7; font-size: 13px; }
+.parkour-rank { color: #8b9b83; width: 20px; font-size: 11px; }
+.parkour-runner { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.parkour-falls { color: #839078; font-size: 10px; }
+.parkour-score strong { font-variant-numeric: tabular-nums; }
+.parkour-empty { color: #7a8971; padding: 14px 16px; background: #eff1e7; border-radius: 10px; font-size: 13px; line-height: 1.5; }
+.parkour-menu > footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 22px; padding-top: 18px; border-top: 1px solid #dce4d4; }
+.parkour-menu > footer > span { font-size: 11px; color: #798772; }
+.parkour-menu .parkour-start { background: #285e4a; color: #fff7e4; border: 0; border-radius: 11px; padding: 12px 18px; white-space: nowrap; }
+@media (max-width: 600px) {
+  .parkour-hud { top: 112px; min-width: 240px; padding: 10px 15px; }
+  .parkour-clock { font-size: 28px; }
+  .panel.parkour-menu { padding: 18px; }
+}

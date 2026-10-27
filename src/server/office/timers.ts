@@ -1,4 +1,5 @@
 import type { Ctx } from './context.js';
+import { canAccessWorker } from '../workers/privacy.js';
 import { SLOW_CLIENT_BYTES } from './client.js';
 
 /** The office's own clocks: terminals re-sent to viewers who fell behind, and the heartbeat. Returns what stops them. */
@@ -6,9 +7,9 @@ export function startTimers(ctx: Ctx): () => void {
   const { clients } = ctx;
   const resync = setInterval(() => {
     for (const c of clients.values()) {
-      if (!c.stale.size || c.ws.bufferedAmount > SLOW_CLIENT_BYTES / 8) continue;
+      if (c.out || !ctx.stillIn(c) || !c.stale.size || c.ws.bufferedAmount > SLOW_CLIENT_BYTES / 8) continue;
       for (const wid of c.stale) {
-        const snap = c.attached.has(wid) ? ctx.workerFloor(wid)?.workers.attach(wid, c.id, c.peer.name) : undefined;
+        const snap = c.attached.has(wid) && canAccessWorker(ctx.workerFloor(wid), wid, c.accountId) ? ctx.workerFloor(wid)?.workers.attach(wid, c.id, c.peer.name) : undefined;
         if (snap) ctx.sendTo(c, { t: 'term.snapshot', workerId: wid, ...snap });
       }
       c.stale.clear();

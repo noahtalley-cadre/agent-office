@@ -10,6 +10,8 @@ import { decorHandlers, decorView } from './decor.js';
 import { dogHandlers, dogView } from './dog.js';
 import { floorHandlers, projectView } from './floors.js';
 import { githubHandlers, issuesView, pullsView } from './github.js';
+import { parkourHandlers, parkourHooks } from './parkour.js';
+import { kitchenHandlers, kitchenView } from './kitchen.js';
 import { jukeboxHandlers, jukeboxView } from './jukebox.js';
 import { meetingHandlers, meetingView } from './meetings.js';
 import { planHandlers, planView } from './plan.js';
@@ -36,6 +38,8 @@ export const handlers: HandlerMap<ClientMsg> = {
   ...floorHandlers,
   ...githubHandlers,
   ...jukeboxHandlers,
+  ...kitchenHandlers,
+  ...parkourHandlers,
   ...meetingHandlers,
   ...planHandlers,
   ...presenceHandlers,
@@ -53,7 +57,7 @@ export const handlers: HandlerMap<ClientMsg> = {
  * The features that keep something per person on a floor, in the order they let go of it when
  * someone leaves the floor or the office (see FeatureHooks): the order the office has always done it in.
  */
-export const features: readonly FeatureHooks[] = [workerHooks, changesHooks, whiteboardHooks, ballHooks, carHooks, cabinetHooks];
+export const features: readonly FeatureHooks[] = [workerHooks, changesHooks, whiteboardHooks, ballHooks, carHooks, cabinetHooks, parkourHooks];
 
 /** What someone arriving on a floor is sent (see office/views.ts): a piece from each feature, in the order it has always gone out. */
 export const views: ViewPieces = {
@@ -73,4 +77,5 @@ export const views: ViewPieces = {
   whiteboard: whiteboardView,
   meeting: meetingView,
   cabinet: cabinetView,
+  kitchen: kitchenView,
 };

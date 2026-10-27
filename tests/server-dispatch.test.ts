@@ -133,7 +133,7 @@ before(async () => {
   const project = path.join(tmp, 'project');
   const publicDir = path.join(tmp, 'public');
   const bin = path.join(tmp, 'bin');
-  for (const d of [home, project, publicDir, path.join(publicDir, 'assets'), bin, path.join(tmp, 'projects')]) mkdirSync(d, { recursive: true });
+  for (const d of [home, project, publicDir, path.join(publicDir, 'assets'), path.join(publicDir, 'brand'), bin, path.join(tmp, 'projects')]) mkdirSync(d, { recursive: true });
   writeFileSync(path.join(project, 'README.md'), '# dispatch\n');
   for (const args of [['init', '-q', '-b', 'main'], ['add', '.'], ['-c', 'user.name=test', '-c', 'user.email=test@example.com', 'commit', '-qm', 'init']]) {
     execFileSync('git', args, { cwd: project });
@@ -142,6 +142,8 @@ before(async () => {
   for (const page of ['index', 'login', 'claim', 'join', 'lite']) writeFileSync(path.join(publicDir, `${page}.html`), `<!doctype html><title>${page}</title>`);
   writeFileSync(path.join(publicDir, 'favicon.svg'), '<svg xmlns="http://www.w3.org/2000/svg"/>');
   writeFileSync(path.join(publicDir, 'assets', 'app.js'), 'export {};\n');
+  writeFileSync(path.join(publicDir, 'brand', 'cube.svg'), '<svg xmlns="http://www.w3.org/2000/svg"/>');
+  writeFileSync(path.join(publicDir, 'brand', 'inter.woff2'), 'font-fixture');
   // A stand-in for Claude Code, so reading the plan's limits never runs the real one.
   const claude = path.join(bin, 'claude');
   writeFileSync(claude, '#!/bin/sh\nexit 0\n');
@@ -197,6 +199,17 @@ test('answers the open routes before anyone signs in', async () => {
   assert.deepEqual(await (await post('/api/claim', { token: 'nope' })).json(), { error: 'This office has already been claimed. Sign in with the password you saved.' });
   assert.equal((await post('/api/link', { key: 'nope' })).status, 410);
   assert.equal((await post('/api/join', { token: 'nope' })).status, 410);
+});
+
+test('serves sign-in brand assets without a session while keeping other bundle files private', async () => {
+  const logo = await get('/brand/cube.svg');
+  assert.equal(logo.status, 200);
+  assert.equal(logo.headers.get('content-type'), 'image/svg+xml');
+  assert.equal(logo.headers.get('cache-control'), 'no-store');
+  assert.equal((await get('/brand/inter.woff2')).headers.get('content-type'), 'font/woff2');
+  assert.equal((await get('/brand/missing.svg')).status, 404);
+  assert.equal((await get('/brand/..%2Findex.html')).status, 404);
+  assert.equal((await get('/index.html')).status, 302);
 });
 
 test('signs in with the office password', async () => {
@@ -267,7 +280,7 @@ test('welcomes a browser and dispatches what it sends', async () => {
   assert.equal(ada?.name, 'Ada');
   assert.equal(ada?.color, '#ff8a5b');
   assert.equal(ada?.floor, floor.id);
-  assert.deepEqual(Object.keys(welcome).slice(-17), ['floor', 'project', 'workers', 'issues', 'pulls', 'queue', 'decor', 'plan', 'services', 'dog', 'ball', 'cars', 'jail', 'jukebox', 'whiteboard', 'meeting', 'cabinet']);
+  assert.deepEqual(Object.keys(welcome).slice(-18), ['floor', 'project', 'workers', 'issues', 'pulls', 'queue', 'decor', 'plan', 'services', 'dog', 'ball', 'cars', 'jail', 'jukebox', 'whiteboard', 'meeting', 'cabinet', 'kitchen']);
 
   a.send({ t: 'ping', at: 42 });
   const pong = await a.take('pong');
@@ -482,5 +495,28 @@ test('the hook server answers only workers, with their own token', async () => {
     const res = await hook(p, { headers: { authorization: 'Bearer nope' } });
     assert.equal(res.status, 401);
     assert.match(((await res.json()) as { error: string }).error, /AGENT_OFFICE_WORKER_ID/);
+  }
+});
+
+
+test('fifteen simultaneous players receive each other’s movements and shared chat', { timeout: 15000 }, async () => {
+  const players: Browser[] = [];
+  try {
+    for (let i = 0; i < 15; i++) players.push(await Browser.open(`?name=Load-${i}`));
+    const welcomes = await Promise.all(players.map((p) => p.take('welcome')));
+    const ids = welcomes.map((w) => w.you);
+    assert.equal(new Set(ids).size, 15);
+    assert.equal(welcomes.at(-1)!.peers.length, 15);
+    // 20 updates/second from every player. The final position must reach all 14 peers.
+    for (let tick = 0; tick < 60; tick++) {
+      players.forEach((p, i) => p.send({ t: 'move', x: i * 0.1, y: 0, z: tick * 0.01, rotY: 0, moving: true }));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    await Promise.all(players.flatMap((p, i) => ids.filter((_, j) => j !== i).map((id) => p.take('peer.move', (m) => m.id === id && m.z === 0.59))));
+    players[0].send({ t: 'chat', text: 'Fifteen-player clubhouse check' });
+    await Promise.all(players.map((p) => p.take('chat', (m) => m.text === 'Fifteen-player clubhouse check')));
+    assert.ok(players.every((p) => !p.closed));
+  } finally {
+    await Promise.all(players.map((p) => p.close()));
   }
 });

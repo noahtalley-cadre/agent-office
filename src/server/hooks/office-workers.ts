@@ -1,4 +1,5 @@
 import type http from 'node:http';
+import { canAccessWorker } from '../workers/privacy.js';
 import { notLeaving } from '../leave-on-merge.js';
 import { findWorker, readHireRequest, readHomeRequest, readPrRequest, workerRow, type PullsView } from '../office-workers.js';
 import { gh } from '../github.js';
@@ -44,7 +45,10 @@ export async function officeWorkers(ctx: Ctx, req: http.IncomingMessage, res: ht
   const floor = ctx.workerFloor(workerId);
   const me = floor?.workers.authenticate(workerId, token);
   if (!floor || !me) return send(res, 401, { error: 'Send your own AGENT_OFFICE_WORKER_ID as ?worker= and AGENT_OFFICE_HOOK_TOKEN as the bearer token' });
+  const owner = floor.workers.ownerOf(me.id);
+  if (owner && !ctx.accounts.get(owner)) return send(res, 403, { error: 'The account that started this worker was revoked' });
   const who = me.name;
+  const accessible = () => floor.workers.list().filter((w) => canAccessWorker(floor, w.id, owner));
   const view: PullsView = { pulls: floor.github.pulls.items, tasks: floor.queue.state().tasks, pullsOf: (id) => ctx.floors.get(id)?.github.pulls.items };
   const row = (id: string) => {
     const w = floor.workers.get(id);
@@ -52,7 +56,7 @@ export async function officeWorkers(ctx: Ctx, req: http.IncomingMessage, res: ht
   };
   const action = url.pathname.slice('/office/workers'.length);
   if (req.method === 'GET' && !action) {
-    const list = floor.workers.list();
+    const list = accessible();
     const free = nextFreeSeat((id) => floor.workers.deskOccupied(id), floor.plan.wing);
     return send(res, 200, {
       floor: { id: floor.id, name: floor.def.name, repo: floor.def.repo, branch: floor.project.branch },
@@ -80,7 +84,7 @@ export async function officeWorkers(ctx: Ctx, req: http.IncomingMessage, res: ht
     const results: Outcome[] = [];
     const going: { w: WorkerInfo; why?: string }[] = [];
     if (ask.merged) {
-      for (const w of floor.workers.list()) {
+      for (const w of accessible()) {
         const landed = floor.landed(w);
         if (!landed) continue;
         const why = landed.prs?.length ? `its pull requests merged (${landed.prs.join(', ')})` : `PR #${landed.pr} merged`;
@@ -90,7 +94,7 @@ export async function officeWorkers(ctx: Ctx, req: http.IncomingMessage, res: ht
       }
     } else {
       for (const key of ask.workers) {
-        const w = findWorker(floor.workers.list(), key);
+        const w = findWorker(accessible(), key);
         if (typeof w === 'string') results.push({ worker: key, error: w });
         else if (w.id === me.id) results.push({ worker: w.name, id: w.id, error: "That's you: someone else has to send you home" });
         else if (!going.some((g) => g.w === w)) going.push({ w });
@@ -113,7 +117,7 @@ export async function officeWorkers(ctx: Ctx, req: http.IncomingMessage, res: ht
 
   if (action === '/tell') {
     const b = (body ?? {}) as { worker?: unknown; prompt?: unknown };
-    const w = findWorker(floor.workers.list(), str(b.worker, 64));
+    const w = findWorker(accessible(), str(b.worker, 64));
     if (typeof w === 'string') return send(res, 404, { error: w });
     if (w.id === me.id) return send(res, 400, { error: "That's you" });
     // A shell would run it as a command, in someone's terminal.
@@ -130,7 +134,7 @@ export async function officeWorkers(ctx: Ctx, req: http.IncomingMessage, res: ht
   if (action === '/pr') {
     const ask = readPrRequest(body);
     if (typeof ask === 'string') return send(res, 400, { error: ask });
-    const w = ask.worker ? findWorker(floor.workers.list(), ask.worker) : me;
+    const w = ask.worker ? findWorker(accessible(), ask.worker) : me;
     if (typeof w === 'string') return send(res, 404, { error: w });
     if (w.kind !== 'agent') return send(res, 400, { error: `${w.name} is a shell, not an agent` });
     const pr = ask.pr === undefined ? undefined : await pullOf(floor, ask.pr, ask.repo);
@@ -153,7 +157,6 @@ export async function officeWorkers(ctx: Ctx, req: http.IncomingMessage, res: ht
   if (worktree) await floor.workers.fetchBase();
   if (!ctx.floors.has(floor.id)) return send(res, 410, { error: 'This floor closed' });
   // It runs as whoever the asking worker runs as.
-  const owner = floor.workers.ownerOf(me.id);
   const r = floor.workers.spawn(desk, who, ask.prompt, worktree, 'agent', provider, ask.model, ask.effort, undefined, owner);
   if (typeof r === 'string') return send(res, 400, { error: r });
   ctx.toastFloor(floor, `${who} hired ${r.name}${ask.issue ? ` for issue #${ask.issue}` : ' with a task'}`);

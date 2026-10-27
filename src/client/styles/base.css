@@ -1,13 +1,16 @@
+@font-face { font-family: Inter; src: url('/brand/inter-latin.woff2') format('woff2'); font-style: normal; font-weight: 100 900; font-display: swap; }
+@font-face { font-family: 'Inter Tight'; src: url('/brand/inter-tight-latin.woff2') format('woff2'); font-style: normal; font-weight: 100 900; font-display: swap; }
+@font-face { font-family: Poppins; src: url('/brand/poppins-semibold-latin.woff2') format('woff2'); font-style: normal; font-weight: 600; font-display: swap; }
 /* The base every page of the office builds on, the 3D office and the 2D view alike: colors and the font,
    the reset, panels and buttons, the small pieces many windows share, and the window (modal) frame.
    The office adds its HUD and loading screen (style.css); each window's own look sits next to its
    module in ui/ and comes in with it. */
 
 :root {
-  --ink: #2b2d42;
-  --paper: #fffaf3;
-  --paper-2: #fff1de;
-  --accent: #ff8a5b;
+  --ink: #242424;
+  --paper: #FAF9F6;
+  --paper-2: #F4F0E6;
+  --accent: #DB4545;
   --accent-ink: #ffffff;
   --muted: #7a6f65;
   --good: #06d6a0;
@@ -16,7 +19,7 @@
   --info: #5bc0eb;
   --shadow: 0 4px 0 var(--ink);
   --radius: 16px;
-  --font: 'Nunito', ui-rounded, 'SF Pro Rounded', system-ui, -apple-system, sans-serif;
+  --font: Inter, system-ui, -apple-system, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -126,3 +129,5 @@ a.when:hover { text-decoration: underline; }
 .pd-side input[type=text] { width: 100%; font: inherit; font-size: 13px; border: 2px solid var(--ink); border-radius: 10px; padding: 5px 9px; background: #fff; outline: none; }
 .elevator .dir-change { margin-left: 6px; padding: 1px 8px; font-size: 12px; border-width: 2px; border-radius: 9px; box-shadow: 0 2px 0 var(--ink); vertical-align: baseline; }
 .meeting-field label { margin: 0; }
+
+h1, h2, h3 { font-family: 'Inter Tight', Inter, system-ui, sans-serif; }

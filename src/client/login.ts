@@ -34,7 +34,7 @@ void fetch('/api/login', { cache: 'no-store' })
     nameRow.hidden = false;
     nameInput.required = !shared;
     nameNote.hidden = !shared;
-    sub.textContent = shared ? 'Knock knock. Who is it?' : 'Knock knock. Who is it? Sign in with your own account.';
+    sub.textContent = shared ? 'Use your account or the shared office password.' : 'Sign in with your own account.';
     try {
       nameInput.value = localStorage.getItem(NAME_KEY) ?? '';
     } catch {

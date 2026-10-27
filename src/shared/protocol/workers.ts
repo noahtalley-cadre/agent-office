@@ -27,6 +27,8 @@ export interface WorkerTask {
 }
 
 export interface WorkerInfo {
+  /** Only public desk presence was sent: another account owns this private session. */
+  private?: boolean;
   id: string;
   /** 'agent' runs the selected provider; 'shell' is a plain shared login shell. */
   kind: WorkerKind;

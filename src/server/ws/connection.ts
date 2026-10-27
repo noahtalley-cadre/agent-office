@@ -108,6 +108,7 @@ export function onConnection(ctx: Ctx, ws: WebSocket, url: URL, session: Session
       return;
     }
     if (!msg || typeof msg !== 'object' || client.out) return;
+    if (!ctx.stillIn(client)) return ctx.signOut(client);
     dispatch(ctx, client, msg);
   });
   ws.on('close', () => {

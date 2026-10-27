@@ -1,4 +1,5 @@
 import type http from 'node:http';
+import { canAccessWorker } from '../workers/privacy.js';
 import type https from 'node:https';
 import type { Duplex } from 'node:stream';
 import { WebSocketServer } from 'ws';
@@ -23,7 +24,8 @@ export function acceptWebSockets(ctx: Ctx, server: http.Server | https.Server) {
     socket.on('error', () => socket.destroy());
     const tunneled = tunneledService(req, cfg.port, cfg.tailnet, (port) => ctx.services.lookup(port));
     if (tunneled) {
-      if (tunneled.svc !== 'gone' && auth.fromAnyCookie(req)) return relayUpgrade(req, socket, head, tunneled.svc);
+      const service = tunneled.svc;
+      if (service !== 'gone' && auth.fromAnyCookie(req, (session) => canAccessWorker(ctx.workerFloor(service.workerId), service.workerId, session.account?.id))) return relayUpgrade(req, socket, head, service);
       return refuseUpgrade(socket);
     }
     let url: URL;

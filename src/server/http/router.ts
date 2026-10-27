@@ -1,4 +1,5 @@
 import type http from 'node:http';
+import { canAccessWorker, PRIVATE_SESSION } from '../workers/privacy.js';
 import type { Session } from '../auth.js';
 import { RELAY_LOGIN, relayRequest, signInPage, stoppedPage, tunneledService } from '../relay.js';
 import type { Ctx } from '../office/context.js';
@@ -51,7 +52,9 @@ export function requestHandler(ctx: Ctx, routes: readonly Route[]) {
         if (req.method === 'POST' && req.url === RELAY_LOGIN) return await login(ctx, req, res);
         if (!auth.fromAnyCookie(req)) return signInPage(res, tunneled.port, loginOptions(ctx));
         if (tunneled.svc === 'gone') return stoppedPage(res, tunneled.port);
-        return relayRequest(req, res, tunneled.svc);
+        const service = tunneled.svc;
+        if (!auth.fromAnyCookie(req, (session) => canAccessWorker(ctx.workerFloor(service.workerId), service.workerId, session.account?.id))) return send(res, 403, { error: PRIVATE_SESSION });
+        return relayRequest(req, res, service);
       }
       let url: URL;
       let p: string;

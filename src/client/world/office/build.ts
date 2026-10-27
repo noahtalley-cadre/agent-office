@@ -27,6 +27,8 @@ import { wing } from './wing';
 import { beanbags, desks, kiosks } from './seats';
 import { meetingRoom } from './meeting-room';
 import { loft } from './loft';
+import { parkour } from '../../features/parkour/world';
+import { clubhouse } from './clubhouse';
 import type { Fixture, Gives, Site } from './fixture';
 
 // The office floor, put together from its fixtures (see fixture.ts): the room and its walls, the desks
@@ -72,6 +74,8 @@ function floorPlan() {
     hoop,
     whiteboard,
     clearOfStairs,
+    clubhouse,
+    parkour,
   ] as const;
 }
 

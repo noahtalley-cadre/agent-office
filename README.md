@@ -1,3 +1,17 @@
+# Cadre AI Office — personal team-office fork
+
+A Cadre-branded, more playful Agent Office for a 10–15-person pilot. Includes a crafted coffee corner, shared dishwasher, Desk Hop parkour and private account-owned terminal views.
+
+**Run the Mac POC:** `docker compose up -d --build`, then read `docker compose logs office` for your single-use admin invite. Share through `node deploy/personal/share.mjs` after installing cloudflared. All office data lives in the portable `clubhouse-data` volume; no host credentials are mounted.
+
+[Personal hosting and easy VPS migration](docs/personal-hosting.md) · [Current hosting costs and client/server split](docs/hosting-costs.md) · [What's new and creative ideas](docs/clubhouse.md) · [Parkour controls](docs/parkour.md) · [Cadre branding](docs/brand.md)
+
+The target is 10–15 concurrent people; agent processes have a separate default limit of 3. Private terminals use application-level ownership checks; this remains a trusted-team system with a shared container filesystem. See the hosting guide before inviting people.
+
+The original project's documentation follows. Its upstream upgrade commands install the upstream release, not this fork; update this fork with Git and `docker compose up -d --build` instead.
+
+---
+
 > [!WARNING]
 > **Work in progress.** Agent Office is built for one person's workflow — mine — and it changes fast as I iterate on it.
 > Expect breaking changes between releases: keys that move, screens that get redrawn, features that come and go
@@ -33,7 +47,7 @@ curl -fsSL https://raw.githubusercontent.com/AgentSystemLabs/agent-office/main/i
 ## What it is
 
 - **A floor per project.** Ride the elevator, pick one of your GitHub repos, and the office clones it (showing how far along it is) and opens a floor for it. Every worker, board and queue on that floor works in that checkout.
-- **Workers at desks.** Walk up to an empty desk, press **E**, and pick Claude Code, Codex, OpenCode, Grok, Muse, DeepSeek Harness, Pi or Cursor, each with its model and reasoning effort. The agent's live terminal shows on its laptop, and anyone can open it and type.
+- **Workers at desks.** Walk up to an empty desk, press **E**, and pick Claude Code, Codex, OpenCode, Grok, Muse, DeepSeek Harness, Pi or Cursor, each with its model and reasoning effort. The agent's live terminal shows on its laptop, and its signed-in owner can open it and type (unowned legacy workers remain shared).
 - **Talk instead of typing.** Hold **Ctrl+Space** (or the **🎤**) in a worker's terminal or a prompt box and say what you want: it's typed in for you to send. Your browser does the listening, so there's nothing to install.
 - **You can't miss who needs you.** A worker that stops to ask you something lights a red beacon over its desk, puts a banner on your screen saying who and what for, and sounds an alarm. One that has finished jumps up and down and dings. Press **N** to go straight to whoever is waiting.
 - **From your phone, too.** `/lite` is the office in 2D: every worker and what it's waiting on, its terminal with the keys a phone keyboard lacks, and the boards. The 3D office offers it on a phone or a slow computer.

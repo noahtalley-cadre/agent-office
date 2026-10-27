@@ -1,5 +1,6 @@
 // The building: its floors, going between them, and what each floor holds.
 
+import type { KitchenState } from '../kitchen.js';
 import type { CabinetView } from '../cabinet.js';
 import type { Decoration } from '../decor.js';
 import type { DogState } from '../dog.js';
@@ -96,6 +97,7 @@ export interface RepoChoice {
 /** Everything that belongs to the floor you're on: sent when you walk in, and when you change floors. */
 
 export interface FloorView {
+  kitchen: KitchenState;
   /** The floor you're on; null while the building has none. */
   floor: string | null;
   project: ProjectInfo | null;

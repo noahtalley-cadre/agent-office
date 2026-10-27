@@ -1,0 +1,3 @@
+{$OFFICE_DOMAIN} {
+    reverse_proxy office:4600
+}

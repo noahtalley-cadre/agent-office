@@ -342,7 +342,7 @@ export class WorkerManager {
       const info = this.spawn(deskId, by, clean, false, 'agent', undefined, undefined, undefined, undefined, owner);
       return typeof info === 'string' ? info : { info, hired: true };
     }
-    // Typed into the question it's asking, the prompt would answer it.
+    if (w.owner !== owner) return 'This session is private to the account that started it';
     if (w.info.status === 'needs_input') return `The ${w.info.name} is waiting on an answer in its terminal`;
     const running = !!(w.pty || w.dsh);
     if (!running) w.info.lastInput = { by, at: Date.now() };
@@ -430,11 +430,11 @@ export class WorkerManager {
   }
 
   /** Lines of every worker's terminal holding `needle` (a searchKey), newest first, at most `perWorker` each. */
-  search(needle: string, perWorker: number): { hits: TerminalHit[]; more: boolean } {
+  search(needle: string, perWorker: number, visible: (id: string) => boolean = () => true): { hits: TerminalHit[]; more: boolean } {
     const hits: TerminalHit[] = [];
     let more = false;
     for (const w of this.workers.values()) {
-      if (!w.term) continue;
+      if (!w.term || !visible(w.info.id)) continue;
       const found = searchTerminal(w.term, needle, perWorker);
       more ||= found.more;
       for (const hit of found.hits) hits.push({ workerId: w.info.id, ...hit });

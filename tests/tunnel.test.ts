@@ -56,6 +56,7 @@ function get(port: number, pathname: string, headers: http.OutgoingHttpHeaders =
  */
 async function setup() {
   const seen: http.IncomingHttpHeaders[] = [];
+  let owner: string | undefined;
   const worker = http.createServer((req, res) => {
     seen.push(req.headers);
     res.setHeader('set-cookie', 'theirs=2');
@@ -81,7 +82,7 @@ async function setup() {
       list: () => (running.has(port) ? [{ ...svc, port }] : []),
       lookup: (p: number) => (p !== port ? undefined : running.has(port) ? svc : 'gone'),
     },
-    workerFloor: (id: string) => (id === 'w1' ? { def: { name: 'acme' }, workers: { get: () => ({ name: 'Byte' }) } } : undefined),
+    workerFloor: (id: string) => (id === 'w1' ? { def: { name: 'acme' }, workers: { get: () => ({ name: 'Byte' }), ownerOf: () => owner } } : undefined),
   } as unknown as Ctx;
   const officeServer = http.createServer(requestHandler(ctx, [authRoutes.login, authRoutes.loginOptions, pageRoutes.health, serviceRoutes.forwards]));
   acceptWebSockets(ctx, officeServer);
@@ -104,7 +105,7 @@ async function setup() {
     worker.close();
     worker.closeAllConnections();
   };
-  return { port, real, seen, running, office, forwarder, events, said, close, officePort: cfg.port };
+  return { accounts, ownBy: (id: string) => { owner = id; }, port, real, seen, running, office, forwarder, events, said, close, officePort: cfg.port };
 }
 
 test("it signs in with the office password and is told the workers' servers", async () => {
@@ -297,4 +298,37 @@ test('the command line', () => {
 
   // The one forward an invited key may open: this computer's port to the office's own.
   assert.deepEqual(sshArgs('office@203.0.113.7', 4700, 4600, ['-i', 'key']).slice(-5), ['-L', '4700:localhost:4600', '-i', 'key', 'office@203.0.113.7']);
+});
+
+
+test('private services are listed and relayed only for their owner, including upgrade requests', async () => {
+  const t = await setup();
+  try {
+    for (const name of ['Alice', 'Bob']) {
+      const invite = t.accounts.invite('test', name === 'Bob' ? 'admin' : 'member', name);
+      assert.notEqual(typeof invite, 'string');
+      if (typeof invite === 'string') throw new Error(invite);
+      const account = await t.accounts.join(invite.token, name, 'private-password');
+      assert.notEqual(typeof account, 'string');
+      if (typeof account !== 'string' && name === 'Alice') t.ownBy(account.id);
+    }
+    await t.office.signIn('Alice', 'private-password');
+    const ownList = await t.office.forwards();
+    assert.equal(typeof ownList === 'object' && ownList.items.length, 1);
+    const ownCookie = t.office.cookie();
+    await t.office.signIn('Bob', 'private-password');
+    const otherList = await t.office.forwards();
+    assert.equal(typeof otherList === 'object' && otherList.items.length, 0);
+    const headers = { host: `127.0.0.1:${t.officePort}`, 'x-agent-office-service': String(t.port) };
+    assert.equal((await get(t.officePort, '/private', { ...headers, cookie: t.office.cookie() })).status, 403);
+    assert.equal((await get(t.officePort, '/private', { ...headers, cookie: ownCookie })).body, 'worker GET /private');
+    const status = await new Promise<number>((resolve, reject) => {
+      const req = http.request({ host: '127.0.0.1', port: t.officePort, headers: { ...headers, cookie: t.office.cookie(), connection: 'Upgrade', upgrade: 'echo' } });
+      req.on('response', (res) => { res.resume(); resolve(res.statusCode ?? 0); });
+      req.on('upgrade', (_res, socket) => { socket.destroy(); resolve(101); });
+      req.on('error', reject);
+      req.end();
+    });
+    assert.equal(status, 401);
+  } finally { t.close(); }
 });

@@ -13,6 +13,10 @@ export function renderWorkers(onOpen: (id: string) => void) {
   ul.replaceChildren();
   const workers = needyFirst(store.workers.values());
   for (const w of workers) {
+    if (w.private) {
+      ul.append(h('li', { title: `${w.createdBy}'s private session` }, h('span.dot', { style: `background:${w.color}` }), h('span.name', {}, w.name, h('span.sub', {}, `🔒 ${w.createdBy}'s private session`)), h('span.pill', {}, STATUS_LABEL[w.status])));
+      continue;
+    }
     const asking = w.status === 'needs_input' && !w.lost;
     const provider = w.kind === 'agent' ? providerLabel(w.provider, store.project) : null;
     const providerKind = w.kind === 'agent' ? resolvedProvider(w.provider, store.project) : undefined;
@@ -40,5 +44,5 @@ export function renderWorkers(onOpen: (id: string) => void) {
   // standing at the Issues, PR and queue kiosks are listed but aren't counted.
   const hired = workers.filter((w) => !DESK_BY_ID.get(w.deskId)?.station).length;
   $('worker-count').textContent = hired ? String(hired) : '';
-  $('workers-panel').classList.toggle('needs-you-panel', workers.some((w) => w.status === 'needs_input'));
+  $('workers-panel').classList.toggle('needs-you-panel', workers.some((w) => !w.private && w.status === 'needs_input'));
 }

@@ -7,6 +7,8 @@ export const HELP_ROWS: readonly (readonly [string, string])[] = [
   ['W A S D', 'Walk (hold Shift to run)'],
   ['Space', 'Jump'],
   ['☕', 'Press E at the coffee machine in the kitchen for a minute of quicker walking and higher jumps. Three cups in a row gives you the jitters'],
+  ['🍽️', 'Press E at the dishwasher beside the coffee pot to load mugs, run a wash cycle and unload clean dishes. Everyone shares the same machine.'],
+  ['🏁', 'Office parkour: E at the start in the south aisle. Space jumps, Shift sprints, R returns to your checkpoint (+2 seconds), X quits. Race for the shared best time.'],
   ['Mouse', 'Look around in first person (click to capture the mouse, Esc to free it)'],
   ['Click / E', "Use what you look at: hire a worker, open its terminal, read a board, call a meeting in the meeting room, watch the TV, put a song on the jukebox, tee off from the balcony, sit on a couch, a beanbag, a chair or the balcony bench (walk off to get up)"],
   ['👥', 'Click someone under "In the office" to walk over to them (on another floor, you ride the elevator first). The line under their name says what they have open or where they are'],
