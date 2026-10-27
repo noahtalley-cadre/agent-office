@@ -29,7 +29,7 @@ async function peek() {
     const r = await post({ peek: true });
     if (!r.ok) return fail(r.body.error ?? 'This invite link does not work.');
     const { name: invited, role, by, project } = r.body as { name?: string; role: string; by: string; project: string };
-    $('title').textContent = `Join the ${project} office`;
+    $('title').textContent = project === 'office' ? 'Join the Cadre AI office' : `Join the ${project} office`;
     const sub = $('sub');
     sub.replaceChildren(`${by} invited you${role === 'admin' ? ' as an ' : '. '}`);
     if (role === 'admin') {
